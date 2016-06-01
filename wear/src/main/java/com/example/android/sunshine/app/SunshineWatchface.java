@@ -156,7 +156,7 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                                 weatherTempHigh = dataMapItem.getDataMap().getString(WEATHER_TEMP_HIGH_KEY);
                                 weatherTempLow = dataMapItem.getDataMap().getString(WEATHER_TEMP_LOW_KEY);
                                 Asset photo = dataMapItem.getDataMap().getAsset(WEATHER_TEMP_ICON_KEY);
-                                weatherTempIcon = loadBitmapFromAsset(googleApiClient, photo);
+                                weatherTempIcon = bitmapFromAsset(googleApiClient, photo);
                             } catch (Exception e) {
                                 Log.e(TAG, "Exception   ", e);
                                 weatherTempIcon = null;
@@ -173,7 +173,7 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                 }
             }
 
-            private Bitmap loadBitmapFromAsset(GoogleApiClient apiClient, Asset asset) {
+            private Bitmap bitmapFromAsset(GoogleApiClient apiClient, Asset asset) {
                 if (asset == null) {
                     throw new IllegalArgumentException("Asset must be non-null");
                 }
@@ -217,11 +217,11 @@ public class SunshineWatchface extends CanvasWatchFaceService {
             textPaintTemp = new Paint();
             textPaintTemp = createTextPaint(resources.getColor(R.color.second_text));
             textPaintTempBold = new Paint();
-            textPaintTempBold = createTextPaint(resources.getColor(R.color.main_text));
+            textPaintTempBold = createTextPaint(resources.getColor(R.color.second_text));
 
             linePaint = new Paint();
-            linePaint.setColor(resources.getColor(R.color.second_text));
-            linePaint.setStrokeWidth(0.5f);
+            linePaint.setColor(resources.getColor(android.R.color.secondary_text_light));
+            linePaint.setStrokeWidth(0.8f);
             linePaint.setAntiAlias(true);
 
             mDateFormat = new SimpleDateFormat("ccc, MMM d yyyy", Locale.getDefault());
@@ -402,6 +402,7 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                                 centerY + spaceYTemp - weatherTempIcon.getHeight() / 2 - textBounds.height() / 2, null);
                     }
                 } else {
+                    Log.e("Image","Ille");
                     // draw temperature high
                     text = getString(R.string.info_not_available);
                     textPaintDate.getTextBounds(text, 0, text.length(), textBounds);
