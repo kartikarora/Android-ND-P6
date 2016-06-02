@@ -43,6 +43,9 @@ import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.io.InputStream;
@@ -140,7 +143,7 @@ public class SunshineWatchface extends CanvasWatchFaceService {
          * disable anti-aliasing in ambient mode.
          */
         boolean mLowBitAmbient;
-        private GoogleApiClient googleApiClient;
+        private GoogleApiClient mGoogleApiClient;
         DataApi.DataListener dataListener = new DataApi.DataListener() {
             @Override
             public void onDataChanged(DataEventBuffer dataEvents) {
@@ -159,7 +162,7 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                                 new Thread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        weatherTempIcon = bitmapFromAsset(googleApiClient, photo);
+                                        weatherTempIcon = bitmapFromAsset(mGoogleApiClient, photo);
                                     }
                                 }).start();
 
@@ -233,13 +236,26 @@ public class SunshineWatchface extends CanvasWatchFaceService {
             mDateFormat = new SimpleDateFormat("ccc, MMM d yyyy", Locale.getDefault());
             mDateFormat.setCalendar(mCalendar);
 
-            googleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+            mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
                     .addApi(Wearable.API)
                     .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                         @Override
                         public void onConnected(Bundle bundle) {
                             Log.e(TAG, "onConnected: Successfully connected to Google API client");
-                            Wearable.DataApi.addListener(googleApiClient, dataListener);
+                            Wearable.DataApi.addListener(mGoogleApiClient, dataListener);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await();
+                                    for (final Node node : nodes.getNodes()) {
+                                        MessageApi.SendMessageResult messageResult = Wearable.MessageApi.sendMessage(mGoogleApiClient, node.getId(), "/run_sync", null).await();
+                                        if (messageResult.getStatus().isSuccess()) {
+                                            Log.d("Sent to", node.getDisplayName());
+                                        }
+                                    }
+                                }
+                            }).start();
+
                         }
 
                         @Override
@@ -254,7 +270,7 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                         }
                     })
                     .build();
-            googleApiClient.connect();
+            mGoogleApiClient.connect();
         }
 
         @Override
@@ -381,7 +397,8 @@ public class SunshineWatchface extends CanvasWatchFaceService {
             canvas.drawText(text, centerX - textBounds.width() / 2, centerY, textPaintDate);
             spaceYTemp = textBounds.height();
             String ampm = mCalendar.get(Calendar.AM_PM) == 0 ? "AM" : "PM";
-            text = String.format(Locale.ENGLISH, "%02d", mCalendar.get(Calendar.HOUR))
+            int hour = mCalendar.get(Calendar.HOUR) == 0 ? 12 : mCalendar.get(Calendar.HOUR);
+            text = String.format(Locale.ENGLISH, "%02d", hour)
                     + ":" + String.format(Locale.ENGLISH, "%02d", mCalendar.get(Calendar.MINUTE))
                     + ":" + String.format(Locale.ENGLISH, "%02d", mCalendar.get(Calendar.SECOND))
                     + " " + String.format(Locale.ENGLISH, "%s", ampm);
@@ -408,7 +425,6 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                                 centerY + spaceYTemp - weatherTempIcon.getHeight() / 2 - textBounds.height() / 2, null);
                     }
                 } else {
-                    Log.e("Image", "Ille");
                     // draw temperature high
                     text = getString(R.string.info_not_available);
                     textPaintDate.getTextBounds(text, 0, text.length(), textBounds);

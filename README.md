@@ -2,6 +2,11 @@
 
 ## Go Ubiquitous
 
+To run the app properly, you need to get an API key from Open Weather Map
+
+- Sign up at [Open Weather Map](http://openweathermap.org/appid)
+- Goto `build.gradle` for the mobile module and replace the text `YOUR_API_KEY` with you API key from Open Weather Map 
+
 License
 -------
 Copyright 2015 The Android Open Source Project, Inc.
