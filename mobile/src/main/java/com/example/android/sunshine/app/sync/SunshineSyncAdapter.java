@@ -665,7 +665,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
             Resources resources = context.getResources();
             int artResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
-            String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
+            //String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
 
             // On Honeycomb and higher devices, we can retrieve the size of the large icon
             // Prior to that, we use a fixed size
@@ -682,13 +682,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             Bitmap largeIcon;
             try {
                 largeIcon = Glide.with(context)
-                        .load(artUrl)
+                        .load(artResourceId)
                         .asBitmap()
-                        .error(artResourceId)
                         .fitCenter()
                         .into(largeIconWidth, largeIconHeight).get();
             } catch (InterruptedException | ExecutionException e) {
-                Log.e(LOG_TAG, "Error retrieving large icon from " + artUrl, e);
+                //Log.e(LOG_TAG, "Error retrieving large icon from " + artUrl, e);
                 largeIcon = BitmapFactory.decodeResource(resources, artResourceId);
             }
             Log.d("Sending", "To Wear");

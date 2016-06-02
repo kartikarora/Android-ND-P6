@@ -155,8 +155,14 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                                 weatherTempHigh = dataMapItem.getDataMap().getString(WEATHER_TEMP_HIGH_KEY);
                                 weatherTempLow = dataMapItem.getDataMap().getString(WEATHER_TEMP_LOW_KEY);
-                                Asset photo = dataMapItem.getDataMap().getAsset(WEATHER_TEMP_ICON_KEY);
-                                weatherTempIcon = bitmapFromAsset(googleApiClient, photo);
+                                final Asset photo = dataMapItem.getDataMap().getAsset(WEATHER_TEMP_ICON_KEY);
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        weatherTempIcon = bitmapFromAsset(googleApiClient, photo);
+                                    }
+                                }).start();
+
                             } catch (Exception e) {
                                 Log.e(TAG, "Exception   ", e);
                                 weatherTempIcon = null;
@@ -402,7 +408,7 @@ public class SunshineWatchface extends CanvasWatchFaceService {
                                 centerY + spaceYTemp - weatherTempIcon.getHeight() / 2 - textBounds.height() / 2, null);
                     }
                 } else {
-                    Log.e("Image","Ille");
+                    Log.e("Image", "Ille");
                     // draw temperature high
                     text = getString(R.string.info_not_available);
                     textPaintDate.getTextBounds(text, 0, text.length(), textBounds);
